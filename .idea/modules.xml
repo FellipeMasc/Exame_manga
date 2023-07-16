@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/cart_pole.iml" filepath="$PROJECT_DIR$/.idea/cart_pole.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../fellipe.oliveira.8760.lab12/.idea/fellipe.oliveira.8760.lab12.iml" filepath="$PROJECT_DIR$/../fellipe.oliveira.8760.lab12/.idea/fellipe.oliveira.8760.lab12.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../fellipe.oliveira.8760_lab11/.idea/fellipe.oliveira.8760_lab11.iml" filepath="$PROJECT_DIR$/../fellipe.oliveira.8760_lab11/.idea/fellipe.oliveira.8760_lab11.iml" />
+    </modules>
+  </component>
+</project>
