@@ -33,7 +33,7 @@ def epsilon_greedy_action(q, state, epsilon):
     if rand_number > epsilon:
         return greedy_action(q,state)
     else:
-        rand_action = np.random.randint(0, len(q[state, :]))
+        rand_action = np.random.randint(0, 1)
         return rand_action
 
 
@@ -48,7 +48,7 @@ def greedy_action(q, state):
     :return: greedy action.
     :rtype: int.
     """
-    return np.argmax(q[state, :])
+    return np.argmax(q[state[0],state[1],state[2],state[3], :])
 
 
 class QLearningAgent:
@@ -92,12 +92,12 @@ class QLearningAgent:
         pole_angle_gap = np.linspace(self.lower[2], self.upper[2], self.num_gaps[2])
         pole_angular_velocity_gap = np.linspace(self.lower[3], self.upper[3], self.num_gaps[3])
 
-        index_position = np.maximum(np.digitize(state[0], cart_position_gap) - 1)
-        index_velocity = np.maximum(np.digitize(state[1], cart_velocity_gap) - 1)
-        index_angle = np.maximum(np.digitize(state[2], pole_angle_gap) - 1)
-        index_angle_velocity = np.maximum(np.digitize(state[3], pole_angular_velocity_gap) - 1)
+        index_position = np.maximum(np.digitize(state[0], cart_position_gap) - 1,0)
+        index_velocity = np.maximum(np.digitize(state[1], cart_velocity_gap) - 1,0)
+        index_angle = np.maximum(np.digitize(state[2], pole_angle_gap) - 1,0)
+        index_angle_velocity = np.maximum(np.digitize(state[3], pole_angular_velocity_gap) - 1,0)
 
-        return index_position, index_velocity, index_angle, index_angle_velocity
+        return tuple([index_position,index_velocity,index_angle,index_angle_velocity])   
 
     def update_epsilon(self):
         """

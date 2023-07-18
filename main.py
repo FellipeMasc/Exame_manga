@@ -52,19 +52,19 @@ for episodes in range(1, NUM_EPISODES + 1):
         if RENDER:
             env.render()  # Render the environment for visualization
         # Select action
+        state = agent.get_state_index(state)
         action = agent.get_greedy_action(state)
         # Take action, observe reward and new state
         next_state, reward, done, _ = env.step(action)
-
-        
         state = next_state
         # Accumulate reward
         cumulative_reward = agent.gamma * cumulative_reward + reward
         if done:
-            print("episode: {}/{}, time: {}, score: {:.6}, epsilon: {:.3}"
-                  .format(episodes, NUM_EPISODES, time, cumulative_reward, agent.epsilon))
+            # print("episode: {}/{}, time: {}, score: {:.6}, epsilon: {:.3}"
+            #       .format(episodes, NUM_EPISODES, time, cumulative_reward, agent.epsilon))
             break
     return_history.append(cumulative_reward)
+    agent.update_epsilon()
     # Every 10 episodes, update the plot for training monitoring
     if episodes % 20 == 0:
         plt.plot(return_history, 'b')
@@ -72,5 +72,5 @@ for episodes in range(1, NUM_EPISODES + 1):
         plt.ylabel('Return')
         plt.show(block=False)
         plt.pause(0.1)
-        plt.savefig('dqn_training.' + fig_format, format="png")
+        plt.savefig('dqn_training.' + "png", format="png")
 plt.pause(1.0)
