@@ -3,18 +3,12 @@ import gym
 import numpy as np
 import matplotlib.pyplot as plt
 from ql_agent import QLearningAgent
-from utils import reward_engineering_mountain_car
-import tensorflow as tf
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
-NUM_EPISODES = 300  # Number of episodes used for training
-RENDER = True  # If the Mountain Car environment should be rendered
+NUM_EPISODES = 20  # Number of episodes used for training
+NUM_SHOW = 100 # Number of episodes used for show trained
 
-# Comment this line to enable training using your GPU
-# os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-
-tf.compat.v1.disable_eager_execution()
 
 # Initiating the CartPole environment
 env = gym.make('CartPole-v1')
@@ -25,10 +19,10 @@ action_size = env.action_space.n
 # Here define the parameters for state discretization
 upperBounds = env.observation_space.high
 lowerBounds = env.observation_space.low
-cartVelocityMin = -3
-cartVelocityMax = 3
-poleAngleVelocityMin = -10
-poleAngleVelocityMax = 10
+cartVelocityMin = -4
+cartVelocityMax = 4
+poleAngleVelocityMin = -5
+poleAngleVelocityMax = 5
 upperBounds[1] = cartVelocityMax
 upperBounds[3] = poleAngleVelocityMax
 lowerBounds[1] = cartVelocityMin
@@ -39,38 +33,58 @@ numberOfBinsVelocity = 30
 numberOfBinsAngle = 30
 numberOfBinsAngleVelocity = 30
 numberOfBins = [numberOfBinsPosition, numberOfBinsVelocity, numberOfBinsAngle, numberOfBinsAngleVelocity]
-agent = QLearningAgent(numberOfBins, action_size, 0.5, 0.1, 1, lowerBounds, upperBounds)
+agent = QLearningAgent(numberOfBins, action_size, 0.2, 0.1, 1, lowerBounds, upperBounds)
 
-return_history = []
-
+sumRewards = []
 for episodes in range(1, NUM_EPISODES + 1):
     # Reset the environment
-    state = env.reset()
+    state, _ = env.reset()
+    state = list(state)
     # Cumulative reward is the return since the beginning of the episode
-    cumulative_reward = 0.0
-    for time in range(1, 500):
-        if RENDER:
-            env.render()  # Render the environment for visualization
-        # Select action
-        state = agent.get_state_index(state)
-        action = agent.get_greedy_action(state)
+    cumulative_reward = []
+    print("Simulating episode {}".format(episodes))
+    done = False
+    while not done:
+        state_index = agent.get_state_index(state)
+        action = agent.epsilon_greedy_action(state,episodes)
         # Take action, observe reward and new state
-        next_state, reward, done, _ = env.step(action)
-        state = next_state
-        # Accumulate reward
-        cumulative_reward = agent.gamma * cumulative_reward + reward
-        if done:
-            # print("episode: {}/{}, time: {}, score: {:.6}, epsilon: {:.3}"
-            #       .format(episodes, NUM_EPISODES, time, cumulative_reward, agent.epsilon))
-            break
+        next_state, reward, done, _, _ = env.step(action)
+        next_state = list(next_state)
+        next_state_index = agent.get_state_index(next_state)
+        agent.learn(state_index,action,reward,next_state_index,done)
+        cumulative_reward.append(reward)
+    print("Sum of rewards {}".format(np.sum(cumulative_reward)))
+    sumRewards.append(np.sum(cumulative_reward))      
+plt.plot(sumRewards, color='blue',linewidth=1)
+plt.xlabel('Episode')
+plt.ylabel('Sum of Rewards in Episode')
+plt.yscale('log')
+plt.savefig('agent_training.png')
+plt.show()
+
+
+#Best Policy
+# env_train = gym.make("CartPole-v1")
+return_history = []
+env_train = gym.make("CartPole-v1", render_mode ="human")
+state, _ = env_train.reset()
+env_train.render()
+for episodes in range(1, NUM_SHOW + 1):
+    print(episodes)
+    done = False
+    state, _ = env_train.reset()
+    cumulative_reward = 0.0
+    while not done:
+        action = agent.get_right_action(state)
+        state, reward, done, _, _ = env_train.step(action)
+        cumulative_reward+= reward
     return_history.append(cumulative_reward)
-    agent.update_epsilon()
-    # Every 10 episodes, update the plot for training monitoring
-    if episodes % 20 == 0:
-        plt.plot(return_history, 'b')
-        plt.xlabel('Episode')
-        plt.ylabel('Return')
-        plt.show(block=False)
-        plt.pause(0.1)
-        plt.savefig('dqn_training.' + "png", format="png")
-plt.pause(1.0)
+#mean of rewards of agent already trained
+print("Mean return: ", np.mean(return_history))
+
+plt.plot(return_history, color='blue',linewidth=1)
+plt.xlabel('Episode')
+plt.ylabel('Sum of Rewards in Episode')
+plt.yscale('log')
+plt.savefig('evaluate.png')
+plt.show()

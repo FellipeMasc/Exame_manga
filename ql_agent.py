@@ -1,46 +1,9 @@
 import numpy as np
 
 
-# def compute_greedy_policy_as_table(q):
-#     """
-#     Computes the greedy policy as a table.
-#
-#     :param q: action-value table.
-#     :type q: bidimensional numpy array.
-#     :return: greedy policy table.
-#     :rtype: bidimensional numpy array.
-#     """
-#     policy = np.zeros(q.shape)
-#     for s in range(q.shape[0]):
-#         policy[s, greedy_action(q, s)] = 1.0
-#     return policy
-
-
-def epsilon_greedy_action(q, state, epsilon):
-    """
-    Computes the epsilon-greedy action.
-
-    :param q: action-value table.
-    :type q: bidimensional numpy array.
-    :param state: current state.
-    :type state: int.
-    :param epsilon: probability of selecting a random action.
-    :type epsilon: float.
-    :return: epsilon-greedy action.
-    :rtype: int.
-    """
-    rand_number = np.random.rand()
-    if rand_number > epsilon:
-        return greedy_action(q,state)
-    else:
-        rand_action = np.random.randint(0, 1)
-        return rand_action
-
-
 def greedy_action(q, state):
     """
     Computes the greedy action.
-
     :param q: action-value table.
     :type q: bidimensional numpy array.
     :param state: current state.
@@ -83,6 +46,31 @@ class QLearningAgent:
         self.gamma = gamma
         self.q = np.random.uniform(low=0, high=1, size=(num_gaps[0], num_gaps[1], num_gaps[2], num_gaps[3], self.action_number))
 
+    def epsilon_greedy_action(self,state,index):
+        """
+        Computes the epsilon-greedy action.
+
+        :param q: action-value table.
+        :type q: bidimensional numpy array.
+        :param state: current state.
+        :type state: int.
+        :param epsilon: probability of selecting a random action.
+        :type epsilon: float.
+        :return: epsilon-greedy action.
+        :rtype: int.
+        """
+        if index < 500:
+            return np.random.choice(self.action_number)   
+        
+        rand_number = np.random.random()
+        if index > 7000:
+            self.epsilon = 0.999 * self.epsilon
+            
+        if rand_number < self.epsilon:
+            return np.random.choice(self.action_number)
+        else:
+            return np.random.choice(np.where(self.q[self.get_state_index(state)]==np.max(self.q[self.get_state_index(state)]))[0])
+
     def get_state_index(self,state):
         """
         Returns the index of the features already discretized
@@ -99,28 +87,14 @@ class QLearningAgent:
 
         return tuple([index_position,index_velocity,index_angle,index_angle_velocity])   
 
-    def update_epsilon(self):
-        """
-        Updates the epsilon used for epsilon-greedy action selection.
-        """
-        self.epsilon *= 0.99
-        if self.epsilon < 0.01:
-            self.epsilon = 0.01
+    def learn(self, state, action, reward, next_state,done):
+        q_max_next = np.max(self.q[next_state])
+        if not done:
+            error=reward+self.gamma*q_max_next-self.q[state+(action,)]
+            self.q[state+(action,)] = self.q[state+(action,)]+ self.alpha * error
+        else:
+            error=reward-self.gamma*q_max_next-self.q[state+(action,)]
+            self.q[state+(action,)] = self.q[state+(action,)] + self.alpha * error
 
-    def get_greedy_action(self, state):
-        """
-        Returns a greedy action considering the policy of the RL algorithm.
-
-        :param state: current state.
-        :type state: int.
-        :return: greedy action considering the policy of the RL algorithm.
-        :rtype: int.
-        """
-        return epsilon_greedy_action(self.q,state,self.epsilon)
-
-    def learn(self, state, action, reward, next_state):
-        value_max = np.max(self.q[next_state, :])
-        self.q[state, action] = self.q[state, action] + self.alpha * (
-                    reward + self.gamma * value_max - self.q[state, action])
-
-
+    def get_right_action(self,state):
+        return np.random.choice(np.where(self.q[self.get_state_index(state)]==np.max(self.q[self.get_state_index(state)]))[0])
