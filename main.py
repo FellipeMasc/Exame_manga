@@ -6,7 +6,7 @@ from ql_agent import QLearningAgent
 
 os.environ['KMP_DUPLICATE_LIB_OK']='True'
 
-NUM_EPISODES = 20  # Number of episodes used for training
+NUM_EPISODES = 15000  # Number of episodes used for training
 NUM_SHOW = 100 # Number of episodes used for show trained
 
 
@@ -53,6 +53,7 @@ for episodes in range(1, NUM_EPISODES + 1):
         next_state_index = agent.get_state_index(next_state)
         agent.learn(state_index,action,reward,next_state_index,done)
         cumulative_reward.append(reward)
+        state = next_state
     print("Sum of rewards {}".format(np.sum(cumulative_reward)))
     sumRewards.append(np.sum(cumulative_reward))      
 plt.plot(sumRewards, color='blue',linewidth=1)
@@ -64,7 +65,6 @@ plt.show()
 
 
 #Best Policy
-# env_train = gym.make("CartPole-v1")
 return_history = []
 env_train = gym.make("CartPole-v1", render_mode ="human")
 state, _ = env_train.reset()

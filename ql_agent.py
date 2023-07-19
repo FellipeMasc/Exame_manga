@@ -1,19 +1,5 @@
 import numpy as np
 
-
-def greedy_action(q, state):
-    """
-    Computes the greedy action.
-    :param q: action-value table.
-    :type q: bidimensional numpy array.
-    :param state: current state.
-    :type state: Numpy array (1,4).
-    :return: greedy action.
-    :rtype: int.
-    """
-    return np.argmax(q[state[0],state[1],state[2],state[3], :])
-
-
 class QLearningAgent:
     """
     Represents a model-free reinforcement learning algorithm.
@@ -69,7 +55,9 @@ class QLearningAgent:
         if rand_number < self.epsilon:
             return np.random.choice(self.action_number)
         else:
-            return np.random.choice(np.where(self.q[self.get_state_index(state)]==np.max(self.q[self.get_state_index(state)]))[0])
+            # return np.random.choice(np.where(self.q[self.get_state_index(state)]==np.max(self.q[self.get_state_index(state)]))[0])
+            state_index = self.get_state_index(state)
+            return np.argmax(self.q[state_index[0], state_index[1], state_index[2], state_index[3], :])
 
     def get_state_index(self,state):
         """
@@ -97,4 +85,5 @@ class QLearningAgent:
             self.q[state+(action,)] = self.q[state+(action,)] + self.alpha * error
 
     def get_right_action(self,state):
-        return np.random.choice(np.where(self.q[self.get_state_index(state)]==np.max(self.q[self.get_state_index(state)]))[0])
+        state_index = self.get_state_index(state)
+        return np.argmax(self.q[state_index[0], state_index[1], state_index[2], state_index[3], :])
